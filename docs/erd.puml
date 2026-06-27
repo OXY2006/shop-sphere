@@ -1,0 +1,186 @@
+@startuml
+hide circle
+hide methods
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+entity "User" as User {
+    * id : UUID
+    --
+    firstName : String
+    lastName : String
+    email : String
+    password : String
+    phone : String
+    role : Role
+    isVerified : Boolean
+    createdAt : DateTime
+    updatedAt : DateTime
+}
+
+entity "Address" as Address {
+    * id : UUID
+    --
+    userId : UUID
+    fullName : String
+    phone : String
+    addressLine1 : String
+    addressLine2 : String
+    city : String
+    state : String
+    postalCode : String
+    country : String
+    isDefault : Boolean
+}
+
+entity "Category" as Category {
+    * id : UUID
+    --
+    name : String
+    slug : String
+    description : String
+}
+
+entity "Brand" as Brand {
+    * id : UUID
+    --
+    name : String
+    slug : String
+}
+
+entity "Product" as Product {
+    * id : UUID
+    --
+    categoryId : UUID
+    brandId : UUID
+    name : String
+    slug : String
+    description : Text
+    price : Decimal
+    stock : Integer
+    sku : String
+    isActive : Boolean
+    createdAt : DateTime
+}
+
+entity "ProductImage" as ProductImage {
+    * id : UUID
+    --
+    productId : UUID
+    imageUrl : String
+    isPrimary : Boolean
+}
+
+entity "Review" as Review {
+    * id : UUID
+    --
+    userId : UUID
+    productId : UUID
+    rating : Integer
+    comment : Text
+    createdAt : DateTime
+}
+
+entity "Wishlist" as Wishlist {
+    * id : UUID
+    --
+    userId : UUID
+    productId : UUID
+    createdAt : DateTime
+}
+
+entity "Cart" as Cart {
+    * id : UUID
+    --
+    userId : UUID
+    createdAt : DateTime
+}
+
+entity "CartItem" as CartItem {
+    * id : UUID
+    --
+    cartId : UUID
+    productId : UUID
+    quantity : Integer
+}
+
+entity "Order" as Order {
+    * id : UUID
+    --
+    userId : UUID
+    addressId : UUID
+    totalAmount : Decimal
+    status : OrderStatus
+    paymentStatus : PaymentStatus
+    createdAt : DateTime
+}
+
+entity "OrderItem" as OrderItem {
+    * id : UUID
+    --
+    orderId : UUID
+    productId : UUID
+    quantity : Integer
+    unitPrice : Decimal
+}
+
+entity "Payment" as Payment {
+    * id : UUID
+    --
+    orderId : UUID
+    paymentMethod : String
+    transactionId : String
+    amount : Decimal
+    status : PaymentStatus
+}
+
+entity "Coupon" as Coupon {
+    * id : UUID
+    --
+    code : String
+    discount : Decimal
+    expiryDate : Date
+    usageLimit : Integer
+}
+
+entity "Notification" as Notification {
+    * id : UUID
+    --
+    userId : UUID
+    title : String
+    message : Text
+    isRead : Boolean
+}
+
+'=========================
+' Relationships
+'=========================
+
+User ||--o{ Address
+
+User ||--|| Cart
+Cart ||--o{ CartItem
+Product ||--o{ CartItem
+
+User ||--o{ Order
+Address ||--o{ Order
+Order ||--o{ OrderItem
+Product ||--o{ OrderItem
+
+Order ||--|| Payment
+
+Category ||--o{ Product
+Brand ||--o{ Product
+Product ||--o{ ProductImage
+
+User ||--o{ Review
+Product ||--o{ Review
+
+User ||--o{ Wishlist
+Product ||--o{ Wishlist
+
+User ||--o{ Notification
+
+Coupon }o--o{ Order
+
+@enduml
