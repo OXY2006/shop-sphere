@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/src/lib/db/prisma";
+import { registerSchema } from "@/src/lib/validations/auth";
 
-export async function GET() {
-  const users = await prisma.user.findMany();
+export async function POST(req: Request) {
+  const body = await req.json();
 
-  return NextResponse.json(users);
+  const result = registerSchema.safeParse(body);
+
+  if (!result.success) {
+    return NextResponse.json(result.error.flatten(), {
+      status: 400,
+    });
+  }
+
+  return NextResponse.json({
+    success: true,
+    data: result.data,
+  });
 }
