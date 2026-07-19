@@ -1,30 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db/prisma";
+import { hashPassword } from "@/lib/auth/hash";
 import { registerSchema } from "@/lib/validations/auth";
-import { hashPassword } from "@/lib/auth";
+import { formatError } from "@/lib/utils";
+import { MESSAGES } from "@/constants/messages";
 
 export async function POST(req: NextRequest) {
   try {
-    // Get request body
+    // Read request body
     const body = await req.json();
 
-    // Validate request
-    const result = registerSchema.safeParse(body);
+    // Validate input
+    const validation = registerSchema.safeParse(body);
 
-    if (!result.success) {
+    if (!validation.success) {
       return NextResponse.json(
         {
           success: false,
-          errors: result.error.flatten(),
+          message: MESSAGES.COMMON.VALIDATION_ERROR,
+          errors: validation.error.flatten().fieldErrors,
         },
         { status: 400 }
       );
     }
 
-    const { firstName, lastName, email, password } = result.data;
+    const { firstName, lastName, email, password } = validation.data;
 
-    // Check if email already exists
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: {
         email,
@@ -35,14 +38,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Email already registered",
+          message: MESSAGES.AUTH.EMAIL_EXISTS,
         },
         { status: 409 }
       );
     }
 
     // Hash password
-    const passwordHash = await hashPassword(password);
+    const hashedPassword = await hashPassword(password);
 
     // Create user
     const user = await prisma.user.create({
@@ -50,30 +53,30 @@ export async function POST(req: NextRequest) {
         firstName,
         lastName,
         email,
-        passwordHash,
+        passwordHash: hashedPassword,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        createdAt: true,
       },
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: "User registered successfully",
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-        },
+        message: MESSAGES.AUTH.USER_CREATED,
+        user,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error(error);
-
     return NextResponse.json(
       {
         success: false,
-        message: "Internal Server Error",
+        message: formatError(error),
       },
       { status: 500 }
     );

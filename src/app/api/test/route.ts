@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { registerSchema } from "@/src/lib/validations/auth";
+import { registerSchema } from "@/lib/validations/auth";
 
 export async function POST(req: Request) {
   const body = await req.json();

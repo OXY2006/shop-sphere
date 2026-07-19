@@ -3,6 +3,7 @@ export const MESSAGES = {
     USER_CREATED: "User registered successfully.",
     EMAIL_EXISTS: "An account with this email already exists.",
     INVALID_CREDENTIALS: "Invalid email or password.",
+    LOGIN_SUCCESS: "Login successful.",
   },
 
   COMMON: {
