@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-export const registerSchema = z
-  .object({
+export const registerSchema = z.object({
     firstName: z
       .string()
       .trim()
@@ -29,5 +28,18 @@ export const registerSchema = z
     path: ["confirmPassword"],
     message: "Passwords do not match",
   });
+
+  export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("Please enter a valid email"),
+
+  password: z
+    .string()
+    .min(1, "Password is required"),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
 
 export type RegisterInput = z.infer<typeof registerSchema>;

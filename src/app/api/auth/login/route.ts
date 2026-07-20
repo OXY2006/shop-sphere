@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { comparePassword } from "@/lib/auth/hash";
 import { generateToken } from "@/lib/auth/jwt";
-import { loginSchema } from "@/lib/validations/login";
+import { loginSchema } from "@/lib/validations/auth";
 import { formatError } from "@/lib/utils";
 import { MESSAGES } from "@/constants/messages";
 
@@ -27,7 +27,9 @@ export async function POST(req: NextRequest) {
     const { email, password } = validation.data;
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: {
+        email,
+      },
     });
 
     if (!user) {
@@ -56,26 +58,34 @@ export async function POST(req: NextRequest) {
     }
 
     const token = generateToken({
-      id: user.id,
+      userId: user.id,
       email: user.email,
       role: user.role,
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: MESSAGES.AUTH.LOGIN_SUCCESS,
-        token,
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          role: user.role,
-        },
+    const response = NextResponse.json({
+      success: true,
+      message: MESSAGES.AUTH.LOGIN_SUCCESS,
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
       },
-      { status: 200 }
-    );
+    });
+
+    response.cookies.set({
+      name: "token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
   } catch (error) {
     return NextResponse.json(
       {
@@ -86,10 +96,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-
-
-
-
-
-
