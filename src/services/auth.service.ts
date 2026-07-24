@@ -1,3 +1,26 @@
+type ApiResponse<T = unknown> = {
+  success: boolean;
+  message: string;
+  errors?: unknown;
+  user?: T;
+};
+
+async function handleResponse<T>(
+  response: Response
+): Promise<ApiResponse<T>> {
+  const data = await response.json();
+
+  if (!response.ok) {
+    return {
+      success: false,
+      message: data.message,
+      errors: data.errors,
+    };
+  }
+
+  return data;
+}
+
 export async function registerUser(data: {
   firstName: string;
   lastName: string;
@@ -13,7 +36,7 @@ export async function registerUser(data: {
     body: JSON.stringify(data),
   });
 
-  return response.json();
+  return handleResponse(response);
 }
 
 export async function loginUser(data: {
@@ -28,5 +51,13 @@ export async function loginUser(data: {
     body: JSON.stringify(data),
   });
 
-  return response.json();
+  return handleResponse(response);
+}
+
+export async function logoutUser() {
+  const response = await fetch("/api/auth/logout", {
+    method: "POST",
+  });
+
+  return handleResponse(response);
 }

@@ -230,6 +230,8 @@ model Wishlist {
 model Cart {
   id        String @id @default(cuid())
 
+  updatedAt DateTime @updatedAt
+
   userId    String @unique
 
   createdAt DateTime @default(now())
@@ -267,6 +269,8 @@ model Order {
   id String @id @default(cuid())
 
   userId String
+
+  updatedAt DateTime @updatedAt
 
   addressId String
 
